@@ -17,7 +17,14 @@ import {
   useSpeechRecognitionEvent,
 } from 'expo-speech-recognition';
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+
+// 根据手机屏幕分辨率选择录制画质
+const getVideoQuality = () => {
+  if (SCREEN_HEIGHT > 1080) return '2160p';
+  if (SCREEN_HEIGHT > 720) return '1080p';
+  return '720p';
+};
 
 export default function RecorderScreen({ route, navigation }) {
   const { trackingNumber, autoStart } = route.params;
@@ -69,7 +76,7 @@ export default function RecorderScreen({ route, navigation }) {
 
       const video = await cameraRef.current.recordAsync({
         maxDuration: 60,
-        quality: '720p',
+        quality: getVideoQuality(),
       });
       clearInterval(timerRef.current);
       setIsRecording(false);
