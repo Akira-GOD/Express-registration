@@ -6,6 +6,7 @@ import {
   StyleSheet,
   Alert,
   Dimensions,
+  PixelRatio,
   SafeAreaView,
 } from 'react-native';
 import { CameraView, useCameraPermissions, useMicrophonePermissions } from 'expo-camera';
@@ -19,11 +20,13 @@ import {
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
-// 根据手机屏幕分辨率选择录制画质
+// 根据手机物理像素分辨率选择录制画质，使视频分辨率与手机屏幕匹配
 const getVideoQuality = () => {
-  if (SCREEN_HEIGHT > 1080) return '2160p';
-  if (SCREEN_HEIGHT > 720) return '1080p';
-  return '720p';
+  const physicalHeight = SCREEN_HEIGHT * PixelRatio.get();
+  if (physicalHeight >= 2160) return '2160p';
+  if (physicalHeight >= 1080) return '1080p';
+  if (physicalHeight >= 720) return '720p';
+  return '480p';
 };
 
 export default function RecorderScreen({ route, navigation }) {
@@ -76,7 +79,6 @@ export default function RecorderScreen({ route, navigation }) {
 
       const video = await cameraRef.current.recordAsync({
         maxDuration: 60,
-        quality: getVideoQuality(),
       });
       clearInterval(timerRef.current);
       setIsRecording(false);
@@ -313,6 +315,7 @@ export default function RecorderScreen({ route, navigation }) {
           ref={cameraRef}
           style={styles.camera}
           mode="video"
+          videoQuality={getVideoQuality()}
           zoom={0.1}
           onCameraReady={() => setCameraReady(true)}
           onMountError={(e) => Alert.alert('相机错误', e?.message || '未知')}
